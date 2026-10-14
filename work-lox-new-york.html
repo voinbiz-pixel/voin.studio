@@ -585,7 +585,9 @@ VOIN.stagePage = function (cfg) {
     K.open = true;
   };
   function measure() {
-    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, probe.offsetHeight || K.VH);
+    /* lay out to what is really visible right now (innerHeight follows the phone's toolbars) */
+    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, K.vhTo || innerHeight || K.VH);
+    pin.style.setProperty('--bar', Math.max(0, K.VH - K.vh).toFixed(1) + 'px');
     K.mob = K.vw < 761 || K.vw / K.vh < .82; K.gut = clamp(K.vw * .044, 20, 72); K.hdr = 76;
     veil.setAttribute('viewBox', '0 0 ' + K.vw + ' ' + K.VH);
     [vAll, vCream].forEach(function (r) { r.setAttribute('width', K.vw); r.setAttribute('height', K.VH); });
@@ -623,7 +625,18 @@ VOIN.stagePage = function (cfg) {
   window.addEventListener('scroll', K.kick, { passive: true });
   var lw = innerWidth, lh = innerHeight;
   /* re-measure whenever the stage box really changes size (Chrome on iPhone resizes it with its toolbars) */
-  function onSize() { if (pin.clientWidth === K.vw && pin.clientHeight === K.VH) return; measure(); render(curP); }
+  var twR = 0;
+  function onSize() {
+    var w = pin.clientWidth, Hh = pin.clientHeight, v = Math.min(Hh, innerHeight);
+    if (w === K.vw && Hh === K.VH && Math.abs(v - K.vh) < 1) return;
+    /* a toolbar sliding in or out: the layout glides to the new height instead of jumping */
+    if (w === K.vw && Hh === K.VH && !K.vhTo) { var a = K.vh, t0 = performance.now(); cancelAnimationFrame(twR);
+      (function f(now) { var t = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - t, 3); K.vhTo = a + (Math.min(pin.clientHeight, innerHeight) - a) * e; measure(); render(curP);
+        if (t < 1) twR = requestAnimationFrame(f); else { K.vhTo = 0; measure(); render(curP); } })(t0); return; }
+    if (K.vhTo) return;
+    measure(); render(curP);
+  }
+  if (window.visualViewport) visualViewport.addEventListener('resize', onSize);
   window.addEventListener('resize', onSize);
   if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(pin);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
@@ -659,9 +672,9 @@ VOIN.page = function () {
       var L = K.fit(K.rect(g, top + vh * (K.mob ? .1 : .12), vw - g * 2, vh * (K.mob ? .26 : .38)), 'left');
       lead.style.width = (K.mob ? vw - g * 2 : Math.min(520, vw * .4)) + 'px';
       K.leadX = K.mob ? g : vw - g - lead.offsetWidth; K.leadY = L.bottom + (K.mob ? 22 : 34);
-      W.main = K.rect(g, top, vw - g * 2, K.mob ? Math.min(H * .62, (vw - g * 2) * 1.05) : H, K.mob ? 26 : 32);
+      W.main = K.rect(g, top, vw - g * 2, K.mob ? Math.min(H, (vw - g * 2) * 1.7) : H, K.mob ? 26 : 32);
       W.small = K.rect(vw * .35, vh * .4, vw * .3, vh * .2, 20);
-      if (K.mob) { W.side = K.rect(g, top, vw - g * 2, H * .36, 26); X.sx = g; X.sw = vw - g * 2; }
+      if (K.mob) { X.sx = g; X.sw = vw - g * 2; story.style.width = X.sw + 'px'; W.side = K.rect(g, top, vw - g * 2, K.clamp(H - story.offsetHeight - 26, H * .3, (vw - g * 2) * 1.3), 26); }
       else { W.side = K.rect(vw * .5, top, vw * .5 - g, H, 32); X.sx = g; X.sw = vw * .5 - g * 2.2; }
       story.style.width = X.sw + 'px';
       X.sy = K.mob ? W.side.t + W.side.h + 26 : top + Math.max(0, (H - story.offsetHeight) / 2);

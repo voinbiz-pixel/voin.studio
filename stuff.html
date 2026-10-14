@@ -624,7 +624,9 @@ VOIN.stagePage = function (cfg) {
     K.open = true;
   };
   function measure() {
-    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, probe.offsetHeight || K.VH);
+    /* lay out to what is really visible right now (innerHeight follows the phone's toolbars) */
+    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, K.vhTo || innerHeight || K.VH);
+    pin.style.setProperty('--bar', Math.max(0, K.VH - K.vh).toFixed(1) + 'px');
     K.mob = K.vw < 761 || K.vw / K.vh < .82; K.gut = clamp(K.vw * .044, 20, 72); K.hdr = 76;
     veil.setAttribute('viewBox', '0 0 ' + K.vw + ' ' + K.VH);
     [vAll, vCream].forEach(function (r) { r.setAttribute('width', K.vw); r.setAttribute('height', K.VH); });
@@ -662,7 +664,18 @@ VOIN.stagePage = function (cfg) {
   window.addEventListener('scroll', K.kick, { passive: true });
   var lw = innerWidth, lh = innerHeight;
   /* re-measure whenever the stage box really changes size (Chrome on iPhone resizes it with its toolbars) */
-  function onSize() { if (pin.clientWidth === K.vw && pin.clientHeight === K.VH) return; measure(); render(curP); }
+  var twR = 0;
+  function onSize() {
+    var w = pin.clientWidth, Hh = pin.clientHeight, v = Math.min(Hh, innerHeight);
+    if (w === K.vw && Hh === K.VH && Math.abs(v - K.vh) < 1) return;
+    /* a toolbar sliding in or out: the layout glides to the new height instead of jumping */
+    if (w === K.vw && Hh === K.VH && !K.vhTo) { var a = K.vh, t0 = performance.now(); cancelAnimationFrame(twR);
+      (function f(now) { var t = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - t, 3); K.vhTo = a + (Math.min(pin.clientHeight, innerHeight) - a) * e; measure(); render(curP);
+        if (t < 1) twR = requestAnimationFrame(f); else { K.vhTo = 0; measure(); render(curP); } })(t0); return; }
+    if (K.vhTo) return;
+    measure(); render(curP);
+  }
+  if (window.visualViewport) visualViewport.addEventListener('resize', onSize);
   window.addEventListener('resize', onSize);
   if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(pin);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
@@ -700,7 +713,9 @@ VOIN.page = function () {
       lead.style.width = (K.mob ? vw - g * 2 : Math.min(460, vw * .34)) + 'px';
       K.leadX = K.mob ? g : vw - g - lead.offsetWidth; K.leadY = L.bottom + (K.mob ? 22 : 34);
       /* projects: one big window, words beside it */
-      if (K.mob) W.win = K.rect(g, top, vw - g * 2, Math.min(vh * .42, (vw - g * 2) * .9), 26);
+      /* phones: the window takes whatever the words underneath leave */
+      if (K.mob) { pt.forEach(function (t) { t.style.width = (vw - g * 2) + 'px'; }); var ptH = Math.max.apply(null, pt.map(function (t) { return t.offsetHeight; }));
+        W.win = K.rect(g, top, vw - g * 2, K.clamp(H - ptH - 22, (vw - g * 2) * .6, (vw - g * 2) * 1.6), 26); }
       else W.win = K.rect(g, top, vw * .56, vh - top - g * .8, 30);
       W.small = K.rect(W.win.l + W.win.w * .3, W.win.t + W.win.h * .35, W.win.w * .4, W.win.h * .3, 20);
       X.tx = K.mob ? g : W.win.l + W.win.w + g; X.tw = K.mob ? vw - g * 2 : vw - X.tx - g;
@@ -708,8 +723,10 @@ VOIN.page = function () {
       X.ty = pt.map(function (t) { return K.mob ? W.win.t + W.win.h + 22 : Math.max(top, (vh - t.offsetHeight) / 2 + 10); });
       /* what I make: one window that changes shape, words on the other side */
       K.place(chT, g, top + 4); var ctop = top + chT.offsetHeight + (K.mob ? 16 : 24), CH = bot - ctop;
-      var area = K.mob ? K.rect(g, ctop, vw - g * 2, CH * .4) : K.rect(vw * .5, ctop, vw * .5 - g, CH);
-      SH = [[1.6, .07], [1, .08], [.56, .1], [1, .5]].map(function (f) {
+      if (K.mob) ct.forEach(function (t) { t.style.width = (vw - g * 2) + 'px'; });
+      var ctH = K.mob ? Math.max.apply(null, ct.map(function (t) { return t.offsetHeight; })) : 0;
+      var area = K.mob ? K.rect(g, ctop, vw - g * 2, Math.max(CH * .3, CH - ctH - 22)) : K.rect(vw * .5, ctop, vw * .5 - g, CH);
+      SH = (K.mob ? [[1.15, .07], [1, .08], [.56, .1], [1, .5]] : [[1.6, .07], [1, .08], [.56, .1], [1, .5]]).map(function (f) {
         var w = Math.min(area.w, area.h * f[0]), h = w / f[0]; if (h > area.h) { h = area.h; w = h * f[0]; }
         return K.rect(area.l + (area.w - w) / 2, area.t + (area.h - h) / 2, w, h, Math.min(w, h) * f[1]);
       });

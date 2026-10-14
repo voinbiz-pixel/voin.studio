@@ -605,7 +605,9 @@ VOIN.stagePage = function (cfg) {
     K.open = true;
   };
   function measure() {
-    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, probe.offsetHeight || K.VH);
+    /* lay out to what is really visible right now (innerHeight follows the phone's toolbars) */
+    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, K.vhTo || innerHeight || K.VH);
+    pin.style.setProperty('--bar', Math.max(0, K.VH - K.vh).toFixed(1) + 'px');
     K.mob = K.vw < 761 || K.vw / K.vh < .82; K.gut = clamp(K.vw * .044, 20, 72); K.hdr = 76;
     veil.setAttribute('viewBox', '0 0 ' + K.vw + ' ' + K.VH);
     [vAll, vCream].forEach(function (r) { r.setAttribute('width', K.vw); r.setAttribute('height', K.VH); });
@@ -643,7 +645,18 @@ VOIN.stagePage = function (cfg) {
   window.addEventListener('scroll', K.kick, { passive: true });
   var lw = innerWidth, lh = innerHeight;
   /* re-measure whenever the stage box really changes size (Chrome on iPhone resizes it with its toolbars) */
-  function onSize() { if (pin.clientWidth === K.vw && pin.clientHeight === K.VH) return; measure(); render(curP); }
+  var twR = 0;
+  function onSize() {
+    var w = pin.clientWidth, Hh = pin.clientHeight, v = Math.min(Hh, innerHeight);
+    if (w === K.vw && Hh === K.VH && Math.abs(v - K.vh) < 1) return;
+    /* a toolbar sliding in or out: the layout glides to the new height instead of jumping */
+    if (w === K.vw && Hh === K.VH && !K.vhTo) { var a = K.vh, t0 = performance.now(); cancelAnimationFrame(twR);
+      (function f(now) { var t = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - t, 3); K.vhTo = a + (Math.min(pin.clientHeight, innerHeight) - a) * e; measure(); render(curP);
+        if (t < 1) twR = requestAnimationFrame(f); else { K.vhTo = 0; measure(); render(curP); } })(t0); return; }
+    if (K.vhTo) return;
+    measure(); render(curP);
+  }
+  if (window.visualViewport) visualViewport.addEventListener('resize', onSize);
   window.addEventListener('resize', onSize);
   if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(pin);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
@@ -684,7 +697,7 @@ VOIN.page = function () {
 
       /* the portrait: a window, and the cut-out of me standing in it, head above the edge */
       var pTop = top + (mob ? 34 : 50);
-      if (mob) { W.p = K.rect(g, pTop, vw - g * 2, Math.min(H * .44, (vw - g * 2) * .95), 26); X.bx = g; X.bw = vw - g * 2; }
+      if (mob) { X.bx = g; X.bw = vw - g * 2; bio.style.width = X.bw + 'px'; W.p = K.rect(g, pTop, vw - g * 2, K.clamp(bot - pTop - bio.offsetHeight - 22, H * .3, (vw - g * 2) * 1.25), 26); }
       else { var pw = Math.min(vw * .4, (H - 50) * .9); W.p = K.rect(g, pTop, pw, H - 50, 32); X.bx = g + pw + g * 1.3; X.bw = Math.min(vw - X.bx - g, 620); }
       bio.style.width = X.bw + 'px';
       X.by = mob ? W.p.t + W.p.h + 22 : pTop + Math.max(0, (W.p.h - bio.offsetHeight) / 2);
@@ -696,8 +709,9 @@ VOIN.page = function () {
       var tw = mob ? vw - g * 2 : vw * .44 - g;
       var sf = Math.min(mob ? vw * .1 : vw * .05, vh * .085, 88);
       sts.forEach(function (t) { t.style.width = tw + 'px'; t.style.setProperty('--sf', sf.toFixed(1) + 'px'); });
-      var area = mob ? K.rect(g, ctop, vw - g * 2, CH * .4) : K.rect(vw * .5, ctop, vw * .5 - g, CH);
-      SH = [[1.5, .1], [1.55, .2], [.62, .5], [.6, .14], [1.55, .08]].map(function (f) {
+      var stH = mob ? Math.max.apply(null, sts.map(function (t) { return t.offsetHeight; })) : 0;
+      var area = mob ? K.rect(g, ctop, vw - g * 2, Math.max(CH * .3, CH - stH - 22)) : K.rect(vw * .5, ctop, vw * .5 - g, CH);
+      SH = (mob ? [[1.05, .1], [1.1, .2], [.62, .5], [.6, .14], [1.05, .08]] : [[1.5, .1], [1.55, .2], [.62, .5], [.6, .14], [1.55, .08]]).map(function (f) {
         var w = Math.min(area.w, area.h * f[0]), h = w / f[0]; if (h > area.h) { h = area.h; w = h * f[0]; }
         return K.rect(area.l + (area.w - w) / 2, area.t + (area.h - h) / 2, w, h, Math.min(w, h) * f[1]);
       });
@@ -710,7 +724,7 @@ VOIN.page = function () {
       lcaps.forEach(function (c) { c.style.setProperty('--lw', cw.toFixed(1) + 'px'); });
       var capH = Math.max.apply(null, lcaps.map(function (c) { return c.offsetHeight; }));
       var rowsN = mob ? 2 : 1, room = bot - ltop - rowsN * (capH + 12) - (rowsN - 1) * (mob ? 18 : 0);
-      var ch = Math.min(cw * (mob ? 1.1 : 1.3), room / rowsN);
+      var ch = Math.min(cw * (mob ? 1.55 : 1.3), room / rowsN);
       var tot = rowsN * (ch + 12 + capH) + (rowsN - 1) * 18;
       var y0 = ltop + Math.max(0, (bot - ltop - tot) / 2);
       LV = lvs.map(function (lv, i) {

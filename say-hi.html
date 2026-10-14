@@ -363,7 +363,7 @@ html.no-motion .mach-spin { display: none; }
 @media (prefers-reduced-motion: no-preference) {
   html.js .reel { padding-left: var(--pad, 20px); margin-left: calc(var(--pad, 20px) * -1); }
   html.js .c-mail { font-size: var(--mf, 64px); }
-  @media (max-width: 760px) { html.js .reel { font-size: min(9.4vw, 5.4vh); } }
+  @media (max-width: 760px) { html.js .reel { font-size: min(11vw, 6.4vh); } }
 }
 </style>
 </head>
@@ -596,7 +596,9 @@ VOIN.stagePage = function (cfg) {
     K.open = true;
   };
   function measure() {
-    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, probe.offsetHeight || K.VH);
+    /* lay out to what is really visible right now (innerHeight follows the phone's toolbars) */
+    K.vw = pin.clientWidth; K.VH = pin.clientHeight; K.vh = Math.min(K.VH, K.vhTo || innerHeight || K.VH);
+    pin.style.setProperty('--bar', Math.max(0, K.VH - K.vh).toFixed(1) + 'px');
     K.mob = K.vw < 761 || K.vw / K.vh < .82; K.gut = clamp(K.vw * .044, 20, 72); K.hdr = 76;
     veil.setAttribute('viewBox', '0 0 ' + K.vw + ' ' + K.VH);
     [vAll, vCream].forEach(function (r) { r.setAttribute('width', K.vw); r.setAttribute('height', K.VH); });
@@ -634,7 +636,18 @@ VOIN.stagePage = function (cfg) {
   window.addEventListener('scroll', K.kick, { passive: true });
   var lw = innerWidth, lh = innerHeight;
   /* re-measure whenever the stage box really changes size (Chrome on iPhone resizes it with its toolbars) */
-  function onSize() { if (pin.clientWidth === K.vw && pin.clientHeight === K.VH) return; measure(); render(curP); }
+  var twR = 0;
+  function onSize() {
+    var w = pin.clientWidth, Hh = pin.clientHeight, v = Math.min(Hh, innerHeight);
+    if (w === K.vw && Hh === K.VH && Math.abs(v - K.vh) < 1) return;
+    /* a toolbar sliding in or out: the layout glides to the new height instead of jumping */
+    if (w === K.vw && Hh === K.VH && !K.vhTo) { var a = K.vh, t0 = performance.now(); cancelAnimationFrame(twR);
+      (function f(now) { var t = Math.min(1, (now - t0) / 320), e = 1 - Math.pow(1 - t, 3); K.vhTo = a + (Math.min(pin.clientHeight, innerHeight) - a) * e; measure(); render(curP);
+        if (t < 1) twR = requestAnimationFrame(f); else { K.vhTo = 0; measure(); render(curP); } })(t0); return; }
+    if (K.vhTo) return;
+    measure(); render(curP);
+  }
+  if (window.visualViewport) visualViewport.addEventListener('resize', onSize);
   window.addEventListener('resize', onSize);
   if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(pin);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
