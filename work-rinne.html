@@ -643,6 +643,8 @@ VOIN.stagePage = function (cfg) {
   measure(); if (cfg.events) cfg.events(K);
   target(); curP = tgtP; render(curP); K.kick();
   V.stage = { T: T, TOTAL: TOTAL, scrollToP: K.scrollToP };
+  if (cfg.snaps) V.magnet({ pts: cfg.snaps(T), total: TOTAL, P: function () { target(); return tgtP; },
+    y: function (P) { return stage.getBoundingClientRect().top + scrollY + P / TOTAL * (stage.offsetHeight - innerHeight); } });
 };
 /* the shared hero: page name over the liquid, a line under it, both leave as the next scene opens */
 VOIN.heroScene = function (K, P, lead, opts) {
@@ -666,6 +668,7 @@ VOIN.page = function () {
   VOIN.stagePage({
     letters: {"d": {"path": "M168 0L88 0L88-745L344-745Q417-745 472-716.5Q527-688 557.5-636.5Q588-585 588-517L588-517Q588-438 546.5-382Q505-326 434-303L434-303L608 0L514 0L350-290L168-290L168 0ZM168-670L168-365L348-365Q396-365 432-383.5Q468-402 488-436.5Q508-471 508-518Q508-565 488-599Q468-633 432-651.5Q396-670 348-670L348-670L168-670ZM743 0L668 0L668-536L743-536L743 0ZM743-635L668-635L668-745L743-745L743-635ZM922 0L847 0L847-536L922-536L922-470Q941-498 971-518L971-518Q1016-548 1076-548L1076-548Q1133-548 1178.5-522Q1224-496 1250.5-450.5Q1277-405 1277-348L1277-348L1277 0L1202 0L1202-319Q1202-368 1184.5-402Q1167-436 1135.5-454.5Q1104-473 1063-473Q1022-473 990-454.5Q958-436 940-401.5Q922-367 922-319L922-319L922 0ZM1445 0L1370 0L1370-536L1445-536L1445-470Q1464-498 1494-518L1494-518Q1539-548 1599-548L1599-548Q1656-548 1701.5-522Q1747-496 1773.5-450.5Q1800-405 1800-348L1800-348L1800 0L1725 0L1725-319Q1725-368 1707.5-402Q1690-436 1658.5-454.5Q1627-473 1586-473Q1545-473 1513-454.5Q1481-436 1463-401.5Q1445-367 1445-319L1445-319L1445 0ZM2137 12L2137 12Q2062 12 2001.5-24.5Q1941-61 1906-125Q1871-189 1871-270Q1871-351 1905-413.5Q1939-476 1997.5-512Q2056-548 2129-548L2129-548Q2187-548 2232.5-526.5Q2278-505 2310-468.5Q2342-432 2359-386.5Q2376-341 2376-293L2376-293Q2376-283 2375-270.5Q2374-258 2372-245L2372-245L1950-245Q1951-196 1972-158L1972-158Q1997-110 2041.5-84Q2086-58 2137-58L2137-58Q2196-58 2236-86Q2276-114 2301-156L2301-156L2365-122Q2349-86 2316-55.5Q2283-25 2237.5-6.5Q2192 12 2137 12ZM1951-315L1951-315L2296-315Q2296-352 2281-384L2281-384Q2259-427 2219-452.5Q2179-478 2129-478Q2079-478 2036.5-452Q1994-426 1970-380L1970-380Q1955-351 1951-315Z", "bbox": {"x0": 88, "x1": 2376, "y0": -745, "y1": 12}, "cap": 745, "lines": 1}, "m": {"path": "M168 0L88 0L88-745L344-745Q417-745 472-716.5Q527-688 557.5-636.5Q588-585 588-517L588-517Q588-438 546.5-382Q505-326 434-303L434-303L608 0L514 0L350-290L168-290L168 0ZM168-670L168-365L348-365Q396-365 432-383.5Q468-402 488-436.5Q508-471 508-518Q508-565 488-599Q468-633 432-651.5Q396-670 348-670L348-670L168-670ZM743 0L668 0L668-536L743-536L743 0ZM743-635L668-635L668-745L743-745L743-635ZM922 0L847 0L847-536L922-536L922-470Q941-498 971-518L971-518Q1016-548 1076-548L1076-548Q1133-548 1178.5-522Q1224-496 1250.5-450.5Q1277-405 1277-348L1277-348L1277 0L1202 0L1202-319Q1202-368 1184.5-402Q1167-436 1135.5-454.5Q1104-473 1063-473Q1022-473 990-454.5Q958-436 940-401.5Q922-367 922-319L922-319L922 0ZM1445 0L1370 0L1370-536L1445-536L1445-470Q1464-498 1494-518L1494-518Q1539-548 1599-548L1599-548Q1656-548 1701.5-522Q1747-496 1773.5-450.5Q1800-405 1800-348L1800-348L1800 0L1725 0L1725-319Q1725-368 1707.5-402Q1690-436 1658.5-454.5Q1627-473 1586-473Q1545-473 1513-454.5Q1481-436 1463-401.5Q1445-367 1445-319L1445-319L1445 0ZM2137 12L2137 12Q2062 12 2001.5-24.5Q1941-61 1906-125Q1871-189 1871-270Q1871-351 1905-413.5Q1939-476 1997.5-512Q2056-548 2129-548L2129-548Q2187-548 2232.5-526.5Q2278-505 2310-468.5Q2342-432 2359-386.5Q2376-341 2376-293L2376-293Q2376-283 2375-270.5Q2374-258 2372-245L2372-245L1950-245Q1951-196 1972-158L1972-158Q1997-110 2041.5-84Q2086-58 2137-58L2137-58Q2196-58 2236-86Q2276-114 2301-156L2301-156L2365-122Q2349-86 2316-55.5Q2283-25 2237.5-6.5Q2192 12 2137 12ZM1951-315L1951-315L2296-315Q2296-352 2281-384L2281-384Q2259-427 2219-452.5Q2179-478 2129-478Q2079-478 2036.5-452Q1994-426 1970-380L1970-380Q1955-351 1951-315Z", "bbox": {"x0": 88, "x1": 2376, "y0": -745, "y1": 12}, "cap": 745, "lines": 1}}, offset: 47,
     segs: [['title', 1], ['open', .9], ['main', .6], ['story', 1.1], ['gal', 1.2], ['finale', .9], ['hold', .4]],
+    snaps: function (T) { return [0, T.main[0] + .3, T.story[0] + (T.story[1] - T.story[0]) * .9, T.gal[1], T.finale[1]]; },
     measure: function (K) {
       if (!lead) { lead = K.$('.cs-lead'); mainW = K.$('.cs-main'); story = K.$('.cs-story'); ga = K.$('.g-a'); gb = K.$('.g-b'); gc = K.$('.g-c'); nx = K.$('.nx'); nxSc = K.$('.sc-next'); }
       var vw = K.vw, vh = K.vh, g = K.gut, top = K.hdr + (K.mob ? 12 : 18), bot = vh - (K.mob ? 30 : g * .7), H = bot - top;
@@ -823,6 +826,30 @@ VOIN.page = function () {
     V.waveOut(function () { atPeak && atPeak(); setTimeout(V.waveIn, 120); });
   };
   V.entering = html.classList.contains('is-entering');
+  /* o = { pts: [P...], total: P, P: fn -> current target P, y: fn(P) -> scroll y } */
+  V.magnet = function (o) {
+    if (REDUCE || !o.pts || !o.pts.length) return;
+    var idle = 0, touching = false, snapping = false, quietUntil = 0;
+    function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function settle() {
+      if (touching || snapping || performance.now() < quietUntil) return;
+      if (mm && mm.classList.contains('open')) return;
+      var P = o.P(); if (P <= .002 || P >= o.total - .002) return;
+      var best = o.pts[0]; o.pts.forEach(function (q) { if (Math.abs(q - P) < Math.abs(best - P)) best = q; });
+      if (Math.abs(best - P) < .006) return;
+      var d = .9 + Math.min(1, Math.abs(best - P)) * .6, y = o.y(best);
+      snapping = true;
+      if (lenis) lenis.scrollTo(y, { duration: d, easing: ease, onComplete: function () { snapping = false; quietUntil = performance.now() + 250; } });
+      else { window.scrollTo({ top: y, behavior: 'smooth' }); setTimeout(function () { snapping = false; quietUntil = performance.now() + 250; }, d * 1000); }
+      setTimeout(function () { snapping = false; }, d * 1000 + 400);
+    }
+    function wait() { clearTimeout(idle); if (!snapping) idle = setTimeout(settle, 170); }
+    window.addEventListener('scroll', wait, { passive: true });
+    window.addEventListener('touchstart', function () { touching = true; snapping = false; clearTimeout(idle); }, { passive: true });
+    window.addEventListener('touchend', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('touchcancel', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('wheel', function () { if (snapping && lenis) { snapping = false; } }, { passive: true });
+  };
   /* a reload or back/forward lands on the finished page, no intro replay */
   V.again = !V.entering && html.classList.contains('is-again');
 

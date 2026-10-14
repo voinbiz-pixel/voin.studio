@@ -654,6 +654,8 @@ VOIN.stagePage = function (cfg) {
   measure(); if (cfg.events) cfg.events(K);
   target(); curP = tgtP; render(curP); K.kick();
   V.stage = { T: T, TOTAL: TOTAL, scrollToP: K.scrollToP };
+  if (cfg.snaps) V.magnet({ pts: cfg.snaps(T), total: TOTAL, P: function () { target(); return tgtP; },
+    y: function (P) { return stage.getBoundingClientRect().top + scrollY + P / TOTAL * (stage.offsetHeight - innerHeight); } });
 };
 /* the shared hero: page name over the liquid, a line under it, both leave as the next scene opens */
 VOIN.heroScene = function (K, P, lead, opts) {
@@ -692,6 +694,7 @@ VOIN.page = function () {
   VOIN.stagePage({
     letters: {"d": {"path": "M339 12L339 12Q268 12 210-15Q152-42 112-87.5Q72-133 55-188L55-188L127-215Q153-139 208-99.5Q263-60 339-60L339-60Q387-60 423.5-75.5Q460-91 480-119Q500-147 500-184L500-184Q500-239 470-269Q440-299 384-315L384-315L250-355Q171-378 128.5-432Q86-486 86-555L86-555Q86-614 115-659.5Q144-705 194.5-731Q245-757 309-757L309-757Q376-757 429.5-732.5Q483-708 520-668Q557-628 573-579L573-579L503-551Q479-617 428.5-651Q378-685 310-685L310-685Q267-685 234.5-670Q202-655 184-627Q166-599 166-561L166-561Q166-515 195-478.5Q224-442 284-424L284-424L402-389Q490-363 535-314Q580-265 580-191L580-191Q580-131 549.5-85.5Q519-40 464.5-14Q410 12 339 12ZM808 12L808 12Q757 12 717-7.5Q677-27 654-61Q631-95 631-139L631-139Q631-181 649-215.5Q667-250 705-274Q743-298 802-308L802-308L996-340L996-368Q996-416 961-446Q926-476 870-476L870-476Q821-476 784-451.5Q747-427 729-388L729-388L661-425Q676-459 708.5-487Q741-515 783-531.5Q825-548 870-548L870-548Q929-548 974.5-525Q1020-502 1045.5-461.5Q1071-421 1071-368L1071-368L1071 0L996 0L996-77Q983-58 964-42L964-42Q934-17 894.5-2.5Q855 12 808 12ZM996-232L996-272L820-243Q762-233 736.5-206Q711-179 711-142L711-142Q711-106 739.5-81Q768-56 813-56L813-56Q868-56 909-79.5Q950-103 973-143Q996-183 996-232L996-232ZM1186 220L1186 220Q1170 220 1153.5 217.5Q1137 215 1121 209L1121 209L1121 139Q1131 140 1146.5 142.5Q1162 145 1178 145L1178 145Q1227 145 1253 124.5Q1279 104 1304 46L1304 46L1323 0L1109-536L1190-536L1365-94L1540-536L1623-536L1378 68Q1362 107 1337.5 142Q1313 177 1276 198.5Q1239 220 1186 220ZM1856 0L1781 0L1781-757L1856-757L1856-470Q1875-498 1905-518L1905-518Q1950-548 2010-548L2010-548Q2067-548 2112.5-522Q2158-496 2184.5-450.5Q2211-405 2211-348L2211-348L2211 0L2136 0L2136-319Q2136-368 2118-402Q2100-436 2068.5-454.5Q2037-473 1997-473Q1957-473 1925-454.5Q1893-436 1874.5-401.5Q1856-367 1856-319L1856-319L1856 0ZM2379 0L2304 0L2304-536L2379-536L2379 0ZM2379-635L2304-635L2304-745L2379-745L2379-635ZM2589 0L2509 0L2509-110L2589-110L2589 0Z", "bbox": {"x0": 55, "x1": 2589, "y0": -757, "y1": 220}, "cap": 745, "lines": 1}, "m": {"path": "M339 12L339 12Q268 12 210-15Q152-42 112-87.5Q72-133 55-188L55-188L127-215Q153-139 208-99.5Q263-60 339-60L339-60Q387-60 423.5-75.5Q460-91 480-119Q500-147 500-184L500-184Q500-239 470-269Q440-299 384-315L384-315L250-355Q171-378 128.5-432Q86-486 86-555L86-555Q86-614 115-659.5Q144-705 194.5-731Q245-757 309-757L309-757Q376-757 429.5-732.5Q483-708 520-668Q557-628 573-579L573-579L503-551Q479-617 428.5-651Q378-685 310-685L310-685Q267-685 234.5-670Q202-655 184-627Q166-599 166-561L166-561Q166-515 195-478.5Q224-442 284-424L284-424L402-389Q490-363 535-314Q580-265 580-191L580-191Q580-131 549.5-85.5Q519-40 464.5-14Q410 12 339 12ZM808 12L808 12Q757 12 717-7.5Q677-27 654-61Q631-95 631-139L631-139Q631-181 649-215.5Q667-250 705-274Q743-298 802-308L802-308L996-340L996-368Q996-416 961-446Q926-476 870-476L870-476Q821-476 784-451.5Q747-427 729-388L729-388L661-425Q676-459 708.5-487Q741-515 783-531.5Q825-548 870-548L870-548Q929-548 974.5-525Q1020-502 1045.5-461.5Q1071-421 1071-368L1071-368L1071 0L996 0L996-77Q983-58 964-42L964-42Q934-17 894.5-2.5Q855 12 808 12ZM996-232L996-272L820-243Q762-233 736.5-206Q711-179 711-142L711-142Q711-106 739.5-81Q768-56 813-56L813-56Q868-56 909-79.5Q950-103 973-143Q996-183 996-232L996-232ZM1186 220L1186 220Q1170 220 1153.5 217.5Q1137 215 1121 209L1121 209L1121 139Q1131 140 1146.5 142.5Q1162 145 1178 145L1178 145Q1227 145 1253 124.5Q1279 104 1304 46L1304 46L1323 0L1109-536L1190-536L1365-94L1540-536L1623-536L1378 68Q1362 107 1337.5 142Q1313 177 1276 198.5Q1239 220 1186 220ZM1856 0L1781 0L1781-757L1856-757L1856-470Q1875-498 1905-518L1905-518Q1950-548 2010-548L2010-548Q2067-548 2112.5-522Q2158-496 2184.5-450.5Q2211-405 2211-348L2211-348L2211 0L2136 0L2136-319Q2136-368 2118-402Q2100-436 2068.5-454.5Q2037-473 1997-473Q1957-473 1925-454.5Q1893-436 1874.5-401.5Q1856-367 1856-319L1856-319L1856 0ZM2379 0L2304 0L2304-536L2379-536L2379 0ZM2379-635L2304-635L2304-745L2379-745L2379-635ZM2589 0L2509 0L2509-110L2589-110L2589 0Z", "bbox": {"x0": 55, "x1": 2589, "y0": -757, "y1": 220}, "cap": 745, "lines": 1}}, offset: 40,
     segs: [['title', 1.1], ['mach', 1.4], ['where', 1.2], ['hold', .4]],
+    snaps: function (T) { return [0, T.mach[0] + (T.mach[1] - T.mach[0]) * .85, T.where[1]]; },
     always: function () {
       var toast = document.querySelector('.toast'), tt;
       document.getElementById('copy').addEventListener('click', function () {
@@ -859,6 +862,30 @@ VOIN.page = function () {
     V.waveOut(function () { atPeak && atPeak(); setTimeout(V.waveIn, 120); });
   };
   V.entering = html.classList.contains('is-entering');
+  /* o = { pts: [P...], total: P, P: fn -> current target P, y: fn(P) -> scroll y } */
+  V.magnet = function (o) {
+    if (REDUCE || !o.pts || !o.pts.length) return;
+    var idle = 0, touching = false, snapping = false, quietUntil = 0;
+    function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function settle() {
+      if (touching || snapping || performance.now() < quietUntil) return;
+      if (mm && mm.classList.contains('open')) return;
+      var P = o.P(); if (P <= .002 || P >= o.total - .002) return;
+      var best = o.pts[0]; o.pts.forEach(function (q) { if (Math.abs(q - P) < Math.abs(best - P)) best = q; });
+      if (Math.abs(best - P) < .006) return;
+      var d = .9 + Math.min(1, Math.abs(best - P)) * .6, y = o.y(best);
+      snapping = true;
+      if (lenis) lenis.scrollTo(y, { duration: d, easing: ease, onComplete: function () { snapping = false; quietUntil = performance.now() + 250; } });
+      else { window.scrollTo({ top: y, behavior: 'smooth' }); setTimeout(function () { snapping = false; quietUntil = performance.now() + 250; }, d * 1000); }
+      setTimeout(function () { snapping = false; }, d * 1000 + 400);
+    }
+    function wait() { clearTimeout(idle); if (!snapping) idle = setTimeout(settle, 170); }
+    window.addEventListener('scroll', wait, { passive: true });
+    window.addEventListener('touchstart', function () { touching = true; snapping = false; clearTimeout(idle); }, { passive: true });
+    window.addEventListener('touchend', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('touchcancel', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('wheel', function () { if (snapping && lenis) { snapping = false; } }, { passive: true });
+  };
   /* a reload or back/forward lands on the finished page, no intro replay */
   V.again = !V.entering && html.classList.contains('is-again');
 

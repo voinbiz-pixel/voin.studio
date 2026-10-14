@@ -723,6 +723,8 @@ VOIN.page = function () {
   var NN = notes.length, TH_LEN = 3.1, LK = null, LKfull = null, nh = [], ntDx = notes.map(function () { return 0; }), gone2 = notes.map(function () { return 0; }), dismissed = notes.map(function () { return false; });
   var lkPad = 14, listTop = 0, listMax = 0, lastLbl = [], clockT = 0;
   var AGO = ['now', '2m ago', '14m ago', '1h ago', '3h ago', 'yesterday'];
+  /* the magnet stops on each notification as it lands */
+  function thSnaps(T) { var L2 = T.wheel[1] - T.wheel[0], o = []; for (var j = 0; j < NN; j++) o.push(T.wheel[0] + L2 * (.2 + j * .12)); return o; }
   var cta = $('.sc-cta'), ctaKids = [].slice.call(cta.children), bar = $('.prog i');
   var N = tiles.length;
   var hov = tiles.map(function () { return 0; }), hovT = tiles.map(function () { return 0; });
@@ -1019,6 +1021,10 @@ VOIN.page = function () {
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
   measure(); target(); curP = tgtP; render(curP);
   V.stage = { T: T, TOTAL: TOTAL, scrollToP: scrollToP };
+  /* resting points: the hero, the words, the bento, each notification, the ending */
+  var pts = [0, T.read[0] + .4, T.look[0] + .35].concat(typeof thSnaps === 'function' ? thSnaps(T) : [lerp(T.wheel[0], T.wheel[1], .5)], [T.finale[1]]);
+  V.magnet({ pts: pts, total: TOTAL, P: function () { target(); return tgtP; },
+    y: function (P) { return stage.getBoundingClientRect().top + scrollY + P / TOTAL * (stage.offsetHeight - innerHeight); } });
 };
 </script><script>
 /* ═══ Voin.Studio · shared behaviour ═══════════════════════════════ */
@@ -1121,6 +1127,30 @@ VOIN.page = function () {
     V.waveOut(function () { atPeak && atPeak(); setTimeout(V.waveIn, 120); });
   };
   V.entering = html.classList.contains('is-entering');
+  /* o = { pts: [P...], total: P, P: fn -> current target P, y: fn(P) -> scroll y } */
+  V.magnet = function (o) {
+    if (REDUCE || !o.pts || !o.pts.length) return;
+    var idle = 0, touching = false, snapping = false, quietUntil = 0;
+    function ease(t) { return t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+    function settle() {
+      if (touching || snapping || performance.now() < quietUntil) return;
+      if (mm && mm.classList.contains('open')) return;
+      var P = o.P(); if (P <= .002 || P >= o.total - .002) return;
+      var best = o.pts[0]; o.pts.forEach(function (q) { if (Math.abs(q - P) < Math.abs(best - P)) best = q; });
+      if (Math.abs(best - P) < .006) return;
+      var d = .9 + Math.min(1, Math.abs(best - P)) * .6, y = o.y(best);
+      snapping = true;
+      if (lenis) lenis.scrollTo(y, { duration: d, easing: ease, onComplete: function () { snapping = false; quietUntil = performance.now() + 250; } });
+      else { window.scrollTo({ top: y, behavior: 'smooth' }); setTimeout(function () { snapping = false; quietUntil = performance.now() + 250; }, d * 1000); }
+      setTimeout(function () { snapping = false; }, d * 1000 + 400);
+    }
+    function wait() { clearTimeout(idle); if (!snapping) idle = setTimeout(settle, 170); }
+    window.addEventListener('scroll', wait, { passive: true });
+    window.addEventListener('touchstart', function () { touching = true; snapping = false; clearTimeout(idle); }, { passive: true });
+    window.addEventListener('touchend', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('touchcancel', function () { touching = false; wait(); }, { passive: true });
+    window.addEventListener('wheel', function () { if (snapping && lenis) { snapping = false; } }, { passive: true });
+  };
   /* a reload or back/forward lands on the finished page, no intro replay */
   V.again = !V.entering && html.classList.contains('is-again');
 
