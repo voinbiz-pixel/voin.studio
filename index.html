@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
-<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}</style>
+<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}html.is-booting body{visibility:hidden;animation:vb 0s 4s forwards}@keyframes vb{to{visibility:visible}}</style>
 <title>Voin.Studio | NinjaVoin makes stuff</title>
 <meta name="description" content="The world got boring. Voin.Studio is where NinjaVoin makes the other stuff: websites, logos, type, films, side quests and whatever idea you bring.">
 <link rel="canonical" href="https://voin.studio/">
@@ -16,7 +16,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <script>if(location.protocol!=='file:')[400,500].forEach(function(w){var l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href='assets/fonts/pjs-'+w+'.woff2';document.head.appendChild(l)})</script>
-<script>document.documentElement.classList.add('js');try{if(sessionStorage.getItem('voin:wave')==='1'){document.documentElement.classList.add('is-entering');sessionStorage.removeItem('voin:wave')}}catch(e){}</script>
+<script>document.documentElement.classList.add('js','is-booting');try{var _n=performance.getEntriesByType('navigation')[0];if(_n&&(_n.type==='reload'||_n.type==='back_forward'))document.documentElement.classList.add('is-again')}catch(e){}try{if(sessionStorage.getItem('voin:wave')==='1'){document.documentElement.classList.add('is-entering');sessionStorage.removeItem('voin:wave')}}catch(e){}</script>
 <style>
 @font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 300; font-display: swap; src: url(assets/fonts/pjs-300.woff2) format('woff2'), url(https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.3.0/files/plus-jakarta-sans-latin-300-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(assets/fonts/pjs-400.woff2) format('woff2'), url(https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.3.0/files/plus-jakarta-sans-latin-400-normal.woff2) format('woff2'); }
@@ -300,6 +300,9 @@ html.has-cur, html.has-cur * { cursor: none !important; }
 .t-hero, .t-xl, .t-l, .t-m, .t-s { text-wrap: balance; }
 .t-lead, .t-body { text-wrap: pretty; }
 
+
+/* a reload of the home page: the moment before it paints is sunset, not cream */
+html.is-again.is-booting { background: linear-gradient(168deg, #FBC796 0%, #EDB0A0 42%, #CDA0BE 68%, #94A0EE 100%) fixed; }
 
 /* ═══ home: one stage, a cream veil with holes over one liquid ═══════ */
 :root { --bar: 0px; }
@@ -674,7 +677,7 @@ VOIN.page = function () {
   var line = document.querySelector('.hero-line');
 
   /* intro: the liquid rises, the mark divides, the wordmark draws in */
-  if (RD || !G) {
+  if (RD || !G || V.again) {
     mark.render(mark.END); V.reveal(line);
     ['.hero-media', '.hero-mark', '.hero-word'].forEach(function (q) { var e = document.querySelector(q); if (e) { e.style.opacity = 1; e.style.transform = 'none'; e.style.filter = 'none'; } });
   } else {
@@ -1065,6 +1068,8 @@ VOIN.page = function () {
     V.waveOut(function () { atPeak && atPeak(); setTimeout(V.waveIn, 120); });
   };
   V.entering = html.classList.contains('is-entering');
+  /* a reload or back/forward lands on the finished page, no intro replay */
+  V.again = !V.entering && html.classList.contains('is-again');
 
   /* warm the next page on hover or touch, so the wave lands on a page that is already here */
   var warmed = {};
@@ -1245,7 +1250,7 @@ VOIN.page = function () {
 
   function boot() {
     doSplits(); watch(); parallax();
-    if (V.page) V.page();
+    try { if (V.page) V.page(); } finally { html.classList.remove('is-booting'); }
     if (V.entering) requestAnimationFrame(function () { requestAnimationFrame(function () { V.waveIn(); }); });
     if (hasST) setTimeout(function () { ScrollTrigger.refresh(); }, 60);
   }

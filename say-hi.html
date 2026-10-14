@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
-<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}</style>
+<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}html.is-booting body{visibility:hidden;animation:vb 0s 4s forwards}@keyframes vb{to{visibility:visible}}</style>
 <title>Say hi | Voin.Studio</title>
 <meta name="description" content="Say hi to NinjaVoin. Bring an idea, or don&#x27;t. nikita@voin.studio">
 <link rel="canonical" href="https://voin.studio/say-hi.html">
@@ -16,7 +16,7 @@
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <script>if(location.protocol!=='file:')[400,500].forEach(function(w){var l=document.createElement('link');l.rel='preload';l.as='font';l.type='font/woff2';l.crossOrigin='';l.href='assets/fonts/pjs-'+w+'.woff2';document.head.appendChild(l)})</script>
-<script>document.documentElement.classList.add('js');try{if(sessionStorage.getItem('voin:wave')==='1'){document.documentElement.classList.add('is-entering');sessionStorage.removeItem('voin:wave')}}catch(e){}</script>
+<script>document.documentElement.classList.add('js','is-booting');try{var _n=performance.getEntriesByType('navigation')[0];if(_n&&(_n.type==='reload'||_n.type==='back_forward'))document.documentElement.classList.add('is-again')}catch(e){}try{if(sessionStorage.getItem('voin:wave')==='1'){document.documentElement.classList.add('is-entering');sessionStorage.removeItem('voin:wave')}}catch(e){}</script>
 <style>
 @font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 300; font-display: swap; src: url(assets/fonts/pjs-300.woff2) format('woff2'), url(https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.3.0/files/plus-jakarta-sans-latin-300-normal.woff2) format('woff2'); }
 @font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-weight: 400; font-display: swap; src: url(assets/fonts/pjs-400.woff2) format('woff2'), url(https://cdn.jsdelivr.net/npm/@fontsource/plus-jakarta-sans@5.3.0/files/plus-jakarta-sans-latin-400-normal.woff2) format('woff2'); }
@@ -537,7 +537,8 @@ window.VOIN = window.VOIN || {};
 VOIN.stagePage = function (cfg) {
   var V = VOIN, $ = function (s, r) { return (r || document).querySelector(s); }, $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var liqEl = $('.liq'), liquid = Liquid(document.getElementById('liquid'), { scale: .6, speed: .3, offset: cfg.offset || 20, still: V.reduce });
-  requestAnimationFrame(function () { liqEl.classList.add('on'); });
+  if (V.again) { liqEl.style.transition = 'none'; liqEl.classList.add('on'); liqEl.offsetWidth; liqEl.style.transition = ''; }
+  else requestAnimationFrame(function () { liqEl.classList.add('on'); });
   var live = !V.reduce && matchMedia('(prefers-reduced-motion: no-preference)').matches;
   if (cfg.always) cfg.always();
   if (!live) return;
@@ -600,7 +601,7 @@ VOIN.stagePage = function (cfg) {
     vMask.setAttribute('width', K.vw); vMask.setAttribute('height', K.VH);
     cfg.measure(K);
   }
-  var liqOn = true, t0 = performance.now(), curP = 0, tgtP = 0, raf = 0;
+  var liqOn = true, t0 = performance.now() - (V.again ? 5000 : 0), curP = 0, tgtP = 0, raf = 0;
   function render(P) {
     K.open = false; K.busy = false;
     K.load = K.eo(clamp((performance.now() - t0) / 1500, 0, 1)); if (K.load < 1) K.busy = true;
@@ -823,6 +824,8 @@ VOIN.page = function () {
     V.waveOut(function () { atPeak && atPeak(); setTimeout(V.waveIn, 120); });
   };
   V.entering = html.classList.contains('is-entering');
+  /* a reload or back/forward lands on the finished page, no intro replay */
+  V.again = !V.entering && html.classList.contains('is-again');
 
   /* warm the next page on hover or touch, so the wave lands on a page that is already here */
   var warmed = {};
@@ -1003,7 +1006,7 @@ VOIN.page = function () {
 
   function boot() {
     doSplits(); watch(); parallax();
-    if (V.page) V.page();
+    try { if (V.page) V.page(); } finally { html.classList.remove('is-booting'); }
     if (V.entering) requestAnimationFrame(function () { requestAnimationFrame(function () { V.waveIn(); }); });
     if (hasST) setTimeout(function () { ScrollTrigger.refresh(); }, 60);
   }
