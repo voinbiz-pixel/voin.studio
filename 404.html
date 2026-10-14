@@ -336,7 +336,7 @@ html:not(.js) .e4-copy { position: relative; padding-top: 18vh; }
 </header>
 <div class="mm" id="mm" aria-hidden="true">
   <div class="mm-liq" aria-hidden="true"><canvas></canvas></div>
-  <svg class="mm-veil" aria-hidden="true" focusable="false"><defs><mask id="mm-m" maskUnits="userSpaceOnUse" x="0" y="0">
+  <svg class="mm-veil" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><mask id="mm-m" maskUnits="userSpaceOnUse" x="0" y="0">
     <rect class="mm-all" x="0" y="0" fill="#fff"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><circle class="mm-dot" fill="#000" r="0"/>
   </mask></defs><rect class="mm-cream" x="0" y="0" fill="#FBF6F0" mask="url(#mm-m)"/></svg>
   <button class="menu-btn mm-close" style="display:inline-flex">Close</button>
@@ -347,7 +347,7 @@ html:not(.js) .e4-copy { position: relative; padding-top: 18vh; }
 
 <section class="e4" aria-labelledby="e4-h">
   <div class="e4-liq" aria-hidden="true"><canvas></canvas></div>
-  <svg class="e4-veil" aria-hidden="true" focusable="false"><defs>
+  <svg class="e4-veil" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs>
     <mask id="e4-m" maskUnits="userSpaceOnUse" x="0" y="0"><rect class="e4-all" x="0" y="0" fill="#fff"/><path class="e4-a" fill="#000"/><ellipse class="e4-o" fill="#000"/><path class="e4-b" fill="#000"/></mask>
     <linearGradient id="e4-d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1E1A1D" stop-opacity=".42"/><stop offset=".55" stop-color="#1E1A1D" stop-opacity="0"/></linearGradient>
   </defs><rect class="e4-cream" x="0" y="0" fill="#FBF6F0" mask="url(#e4-m)"/><ellipse class="e4-depth" fill="url(#e4-d)"/><ellipse class="e4-ring" fill="none" stroke="#FBF6F0" stroke-width="2.5" opacity="0"/></svg>
@@ -559,7 +559,9 @@ VOIN.page = function () {
   }
   btn.addEventListener('click', function () { drop(); });
   measure();
-  var lw = innerWidth; window.addEventListener('resize', function () { if (innerWidth === lw && G.vw < 761) return; lw = innerWidth; measure(); if (liq) liq.resize(); });
+  function onSize() { if (root.clientWidth === G.vw && root.clientHeight === G.vh) return; measure(); if (liq) liq.resize(); }
+  window.addEventListener('resize', onSize);
+  if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(root);
   setTimeout(function () { drop('your page'); }, (document.documentElement.classList.contains('is-entering') || (window.VOIN && VOIN.entering) ? 1500 : 900));
 };
 </script><script>

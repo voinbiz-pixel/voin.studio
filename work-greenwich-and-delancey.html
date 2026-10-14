@@ -376,7 +376,7 @@ html:not(.js) .g-c, html.no-motion .g-c { display: none; }
 </header>
 <div class="mm" id="mm" aria-hidden="true">
   <div class="mm-liq" aria-hidden="true"><canvas></canvas></div>
-  <svg class="mm-veil" aria-hidden="true" focusable="false"><defs><mask id="mm-m" maskUnits="userSpaceOnUse" x="0" y="0">
+  <svg class="mm-veil" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs><mask id="mm-m" maskUnits="userSpaceOnUse" x="0" y="0">
     <rect class="mm-all" x="0" y="0" fill="#fff"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><path class="mm-w" fill="#000"/><circle class="mm-dot" fill="#000" r="0"/>
   </mask></defs><rect class="mm-cream" x="0" y="0" fill="#FBF6F0" mask="url(#mm-m)"/></svg>
   <button class="menu-btn mm-close" style="display:inline-flex">Close</button>
@@ -389,7 +389,7 @@ html:not(.js) .g-c, html.no-motion .g-c { display: none; }
   <div class="ps-pin">
     <div class="vprobe" aria-hidden="true"></div>
     <div class="ps-media"><div class="liq"><canvas id="liquid" aria-hidden="true"></canvas></div></div>
-    <svg class="ps-veil" aria-hidden="true" focusable="false"><defs>
+    <svg class="ps-veil" preserveAspectRatio="none" aria-hidden="true" focusable="false"><defs>
       <mask id="ps-m" maskUnits="userSpaceOnUse" x="0" y="0">
         <rect class="v-all" x="0" y="0" fill="#fff"/>
         <path class="v-letters" fill="#000" d=""/>
@@ -561,6 +561,7 @@ VOIN.stagePage = function (cfg) {
   /* the page name, fitted into a box */
   var LT = null;
   K.fit = function (box, align) {
+    K._fit = [box, align];
     var want = K.mob ? cfg.letters.m : cfg.letters.d; if (want !== LT) { LT = want; vLet.setAttribute('d', LT.path); }
     var bw = LT.bbox.x1 - LT.bbox.x0, deep = LT.cap + LT.bbox.y1, k = Math.min(box.w / bw, box.h / deep);
     var x0 = (align === 'center' ? box.l + (box.w - bw * k) / 2 : box.l) - LT.bbox.x0 * k, base = box.t + LT.cap * k;
@@ -588,7 +589,14 @@ VOIN.stagePage = function (cfg) {
     veil.setAttribute('viewBox', '0 0 ' + K.vw + ' ' + K.VH);
     [vAll, vCream].forEach(function (r) { r.setAttribute('width', K.vw); r.setAttribute('height', K.VH); });
     vMask.setAttribute('width', K.vw); vMask.setAttribute('height', K.VH);
-    cfg.measure(K);
+    K._fit = null; cfg.measure(K);
+    /* short screens: if the line under the page name would run off the bottom, the name gets smaller */
+    var hl = K.$('.sc-hero .abs');
+    if (K._fit && hl && K.L) {
+      var over = K.leadY + hl.offsetHeight + (K.mob ? 24 : 32) - K.vh;
+      if (over > 0) { var fb = K._fit[0], ob = K.L.bottom, nh = Math.max(fb.h * .4, (K.L.bottom - K.L.top) - over);
+        var L2 = K.fit(K.rect(fb.l, fb.t, fb.w, nh), K._fit[1]); K.leadY -= ob - L2.bottom; }
+    }
   }
   var liqOn = true, t0 = performance.now() - (V.again ? 5000 : 0), curP = 0, tgtP = 0, raf = 0;
   function render(P) {
@@ -613,7 +621,10 @@ VOIN.stagePage = function (cfg) {
   if (V.lenis) V.lenis.on('scroll', K.kick);
   window.addEventListener('scroll', K.kick, { passive: true });
   var lw = innerWidth, lh = innerHeight;
-  window.addEventListener('resize', function () { if (innerWidth === lw && K.mob && Math.abs(innerHeight - lh) < 140) return; lw = innerWidth; lh = innerHeight; measure(); render(curP); });
+  /* re-measure whenever the stage box really changes size (Chrome on iPhone resizes it with its toolbars) */
+  function onSize() { if (pin.clientWidth === K.vw && pin.clientHeight === K.VH) return; measure(); render(curP); }
+  window.addEventListener('resize', onSize);
+  if ('ResizeObserver' in window) new ResizeObserver(onSize).observe(pin);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measure(); render(curP); });
   measure(); if (cfg.events) cfg.events(K);
   target(); curP = tgtP; render(curP); K.kick();
@@ -652,7 +663,7 @@ VOIN.page = function () {
       if (K.mob) { W.side = K.rect(g, top, vw - g * 2, H * .36, 26); X.sx = g; X.sw = vw - g * 2; }
       else { W.side = K.rect(vw * .5, top, vw * .5 - g, H, 32); X.sx = g; X.sw = vw * .5 - g * 2.2; }
       story.style.width = X.sw + 'px';
-      X.sy = K.mob ? W.side.t + W.side.h + 26 : top + (H - story.offsetHeight) / 2;
+      X.sy = K.mob ? W.side.t + W.side.h + 26 : top + Math.max(0, (H - story.offsetHeight) / 2);
       var gap = K.mob ? 10 : 16;
       if (K.mob) {
         W.c = K.rect(g, top, vw - g * 2, H * .44, 24);
