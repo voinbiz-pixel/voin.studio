@@ -299,6 +299,13 @@ html body .bt:hover::before, html body .bt:focus-visible::before { animation-pla
 .nav > a:not(.pill) { -webkit-tap-highlight-color: transparent; }
 
 html.has-cur, html.has-cur * { cursor: none !important; }
+/* over anything clickable the dot sinks into it, and the thing itself answers */
+.cur-dot { transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s linear, background-color .3s linear; }
+.cur.is-link .cur-dot { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0); opacity: 0; background: var(--ink); }
+html.has-cur a:not(.pill):not([data-cursor]):not(.logo):hover { opacity: .6; }
+html.has-cur a:not(.pill):not([data-cursor]) { transition: opacity .25s linear; }
+html.has-cur .pill { transition: scale .35s cubic-bezier(.2,.8,.2,1); }
+html.has-cur .pill:hover { scale: 1.05; }
 .t-hero, .t-xl, .t-l, .t-m, .t-s { text-wrap: balance; }
 .t-lead, .t-body { text-wrap: pretty; }
 
@@ -316,7 +323,10 @@ html.js .hero-mark { opacity: 0; }
 html.js .hero-word { opacity: 0; transform: translate3d(0, 22px, 0); filter: blur(12px); }
 html.no-motion .hero-media, html.no-motion .hero-mark { opacity: 1; }
 html.no-motion .hero-word { opacity: 1; transform: none; filter: none; }
-.hero-line { font: 400 clamp(30px, 3.6vw, 58px)/1.04 var(--f-sans); letter-spacing: -.034em; }
+.hero-line { font: 400 clamp(30px, 3.6vw, 58px)/1.04 var(--f-sans); letter-spacing: -.034em; max-width: none; margin: 0; }
+.hero-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; }
+.hero-line2 { text-align: right; }
+@media (max-width: 720px) { .hero-foot { flex-direction: column; align-items: stretch; gap: 6px; } }
 .i-hi, .sc-title { font: 400 clamp(28px, 3.4vw, 54px)/1.06 var(--f-sans); letter-spacing: -.03em; }
 .i-big { font: 400 clamp(56px, 12vw, 200px)/.95 var(--f-sans); letter-spacing: -.05em; }
 .i-rest { font: 400 clamp(18px, 1.6vw, 24px)/1.45 var(--f-sans); letter-spacing: -.014em; color: var(--ink-2); max-width: 34ch; text-wrap: pretty; }
@@ -370,7 +380,7 @@ html.no-motion .hero-word { opacity: 1; transform: none; filter: none; }
 .i-big { margin: 10px 0 24px; }
 .bento { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(14px, 2vw, 24px); margin-top: clamp(32px, 5vw, 64px); }
 .bt { position: relative; aspect-ratio: 4 / 3; }
-.prog { display: none; }
+.prog, html.js .prog { display: none !important; }
 .sc-cta { text-align: center; padding-bottom: clamp(40px, 6vw, 80px); }
 @media (max-width: 760px) { .bento { grid-template-columns: 1fr; } }
 
@@ -503,7 +513,8 @@ html.no-motion .hero-word { opacity: 1; transform: none; filter: none; }
       <div class="hero-word" role="img" aria-label="voin.studio"><svg viewBox="0 0 538.2 76.5" aria-hidden="true" fill="currentColor"><use href="#vw"/></svg></div>
     </div>
     <div class="hero-foot">
-      <h1 class="hero-line split" data-hold>The world got boring.<br>I make the other stuff.</h1>
+      <h1 class="hero-line split" data-hold>The world got boring.</h1>
+      <p class="hero-line hero-line2 split" data-hold>I'm glad I didn't.</p>
     </div>
 
     <div class="sc sc-intro">
@@ -685,11 +696,11 @@ VOIN.page = function () {
   var V = VOIN, RD = V.reduce, G = typeof gsap !== 'undefined';
   var liquid = Liquid(document.getElementById('liquid'), { scale: .6, speed: .3, offset: 14, still: RD });
   var mark = V.Mark(document.querySelector('.hero-mark .mk'));
-  var line = document.querySelector('.hero-line');
+  var line = document.querySelector('.hero-line'), line2 = document.querySelector('.hero-line2');
 
   /* intro: the liquid rises, the mark divides, the wordmark draws in */
   if (RD || !G || V.again) {
-    mark.render(mark.END); V.reveal(line);
+    mark.render(mark.END); V.reveal(line); V.reveal(line2);
     ['.hero-media', '.hero-mark', '.hero-word'].forEach(function (q) { var e = document.querySelector(q); if (e) { e.style.opacity = 1; e.style.transform = 'none'; e.style.filter = 'none'; } });
   } else {
     mark.render(0);
@@ -700,6 +711,7 @@ VOIN.page = function () {
       .add(function () { mark.play(1.15); }, .45)
       .to('.hero-word', { opacity: 1, y: 0, filter: 'blur(0px)', duration: 1.7, ease: 'power3.out' }, 1.6)
       .add(function () { V.reveal(line); }, 2.55)
+      .add(function () { V.reveal(line2); }, 3.15)
       .to('.hdr', { opacity: 1, duration: 1.2, ease: 'power2.out', clearProps: 'opacity' }, 2.6);
   }
 
@@ -1203,6 +1215,7 @@ VOIN.page = function () {
       var v = e.target.closest('[data-cursor="view"]');
       var l = !v && e.target.closest('a, button, [role="button"], input, textarea');
       cur.classList.toggle('is-view', !!v); cur.classList.toggle('is-link', !!l);
+      if (l) { var rb = l.getBoundingClientRect(), dt = cur.querySelector('.cur-dot'); dt.style.setProperty('--dx', ((rb.left + rb.width / 2 - e.clientX) * .6).toFixed(1) + 'px'); dt.style.setProperty('--dy', ((rb.top + rb.height / 2 - e.clientY) * .6).toFixed(1) + 'px'); }
       if (v && tag) tag.textContent = v.getAttribute('data-cursor-label') || 'View';
     });
   } else if (cur) cur.remove();

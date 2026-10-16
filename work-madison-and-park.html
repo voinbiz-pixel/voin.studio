@@ -299,6 +299,13 @@ html body .bt:hover::before, html body .bt:focus-visible::before { animation-pla
 .nav > a:not(.pill) { -webkit-tap-highlight-color: transparent; }
 
 html.has-cur, html.has-cur * { cursor: none !important; }
+/* over anything clickable the dot sinks into it, and the thing itself answers */
+.cur-dot { transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s linear, background-color .3s linear; }
+.cur.is-link .cur-dot { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0); opacity: 0; background: var(--ink); }
+html.has-cur a:not(.pill):not([data-cursor]):not(.logo):hover { opacity: .6; }
+html.has-cur a:not(.pill):not([data-cursor]) { transition: opacity .25s linear; }
+html.has-cur .pill { transition: scale .35s cubic-bezier(.2,.8,.2,1); }
+html.has-cur .pill:hover { scale: 1.05; }
 .t-hero, .t-xl, .t-l, .t-m, .t-s { text-wrap: balance; }
 .t-lead, .t-body { text-wrap: pretty; }
 
@@ -306,7 +313,8 @@ html.has-cur, html.has-cur * { cursor: none !important; }
 /* ═══ inner pages: one stage, a cream veil with holes over one liquid ═══ */
 :root { --bar: 0px; }
 @supports (height: 100lvh) { :root { --bar: calc(100lvh - 100svh); } }
-.ps-veil, .vprobe, .prog { display: none; }
+.ps-veil, .vprobe { display: none; }
+.prog, html.js .prog { display: none !important; }
 .ps-media { position: relative; height: 44vh; background: #F6C9A9; overflow: hidden; border-radius: 0 0 var(--r-panel) var(--r-panel); }
 .liq, .liq canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 .ps-h1 { font: 400 clamp(52px, 9.6vw, 168px)/.92 var(--f-sans); letter-spacing: -.045em; padding: clamp(40px, 6vw, 80px) var(--gutter) 0; max-width: var(--maxw); margin: 0 auto; text-wrap: balance; }
@@ -902,6 +910,7 @@ VOIN.page = function () {
       var v = e.target.closest('[data-cursor="view"]');
       var l = !v && e.target.closest('a, button, [role="button"], input, textarea');
       cur.classList.toggle('is-view', !!v); cur.classList.toggle('is-link', !!l);
+      if (l) { var rb = l.getBoundingClientRect(), dt = cur.querySelector('.cur-dot'); dt.style.setProperty('--dx', ((rb.left + rb.width / 2 - e.clientX) * .6).toFixed(1) + 'px'); dt.style.setProperty('--dy', ((rb.top + rb.height / 2 - e.clientY) * .6).toFixed(1) + 'px'); }
       if (v && tag) tag.textContent = v.getAttribute('data-cursor-label') || 'View';
     });
   } else if (cur) cur.remove();
