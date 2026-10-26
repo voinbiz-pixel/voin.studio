@@ -4,7 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="light only">
-<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}html.is-booting body{visibility:hidden;animation:vb 0s 4s forwards}@keyframes vb{to{visibility:visible}}</style>
+<style>html{background:#FBF6F0;color-scheme:light}@view-transition{navigation:auto}::view-transition-old(root),::view-transition-new(root){animation:none}html.is-booting body{visibility:hidden;animation:vb 0s 4s forwards}@keyframes vb{to{visibility:visible}}/* the regular mouse is back; the dot stays hidden, the "View" label still follows */
+.cur-dot { display: none; }
+</style>
 <title>Stuff | Voin.Studio</title>
 <meta name="description" content="Stuff NinjaVoin has made, and everything he makes: websites, logos, type, films and side quests.">
 <link rel="canonical" href="https://voin.studio/stuff.html">
@@ -298,7 +300,6 @@ html body .bt:hover::before, html body .bt:focus-visible::before { animation-pla
 .cta-sec .row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; margin-top: clamp(32px, 4vw, 48px); }
 .nav > a:not(.pill) { -webkit-tap-highlight-color: transparent; }
 
-html.has-cur, html.has-cur * { cursor: none !important; }
 /* over anything clickable the dot sinks into it, and the thing itself answers */
 .cur-dot { transition: transform .32s cubic-bezier(.2,.8,.2,1), opacity .32s linear, background-color .3s linear; }
 .cur.is-link .cur-dot { transform: translate(var(--dx, 0px), var(--dy, 0px)) scale(0); opacity: 0; background: var(--ink); }
